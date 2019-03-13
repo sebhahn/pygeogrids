@@ -46,11 +46,13 @@ class BasicGrid(object):
 
         if loc is None:
             self.loc = np.arange(self.lon.size, dtype=np.int32)
+            self.iloc = self.loc
         else:
             self.loc = np.asanyarray(loc)
 
-        self.iloc = np.zeros(self.loc.max() + 1, dtype=np.int32)
-        self.iloc[self.loc] = np.arange(self.loc.size)
+            # create look-up table
+            self.iloc = np.zeros(self.loc.max() + 1, dtype=np.int32)
+            self.iloc[self.loc] = np.arange(self.loc.size)
 
         self.geodatum = GeodeticDatum(geodatum)
         self.kdTree = None
@@ -70,12 +72,17 @@ class BasicGrid(object):
         """
         Print grid information.
         """
-        info = 'Grid information\n'
-        info += 'loc.shape: {}\n'.format(self.loc.shape)
-        info += 'lon.shape: {}\n'.format(self.lon.shape)
-        info += 'lat.shape: {}'.format(self.lat.shape)
+        info = 'Grid information: '
+        info += 'loc.shape: {}, '.format(self.loc.shape)
+        info += 'lon.shape: {}, '.format(self.lon.shape)
+        info += 'lat.shape: {}.'.format(self.lat.shape)
 
         return info
+
+    @classmethod
+    def _create_subgrid(cls):
+
+        return cls(None, None, )
 
     def __getitem__(self, iloc):
         """
@@ -157,6 +164,11 @@ class BasicGrid(object):
 
 class BasicSubGrid(BasicGrid):
 
+    """
+    BasicSubGrid
+
+    """
+
     def __init__(self, parent, loc):
         self.parent = parent
         self.child_loc = loc
@@ -214,48 +226,48 @@ class Basic2dGrid(object):
         pass
 
 
-# class Test_BasicGrid(unittest.TestCase):
-
-#     def setUp(self):
-#         """
-#         Setup dummy grid.
-#         """
-#         lon = np.arange(-180, 180, 30)
-#         lat = np.arange(-90, 90, 30)
-#         self.lon, self.lat = np.meshgrid(lon, lat)
-#         self.loc = np.arange(0, self.lon.size) * 10
-
-#     def test_grid_creation(self):
-#         """
-#         Test grid creation and subgrids.
-#         """
-#         grid = BasicGrid(self.lon.flatten(), self.lat.flatten(), self.loc)
-#         subgrid = grid[np.arange(10)]
-#         print(subgrid)
-#         subsubgrid = subgrid[np.arange(5)]
-#         print(subsubgrid)
-
-#         for loc, lon, lat in subsubgrid:
-#             print(loc, lon, lat)
-#             lo, la = subsubgrid.loc2lonlat(loc)
-#             print(lon == lo, lat == la)
-
-
-class Test_Basic2dGrid(unittest.TestCase):
+class Test_BasicGrid(unittest.TestCase):
 
     def setUp(self):
         """
         Setup dummy grid.
         """
-        self.x = np.arange(-180, 180, 30)
-        self.y = np.arange(-90, 90, 30)
+        lon = np.arange(-180, 180, 30)
+        lat = np.arange(-90, 90, 30)
+        self.lon, self.lat = np.meshgrid(lon, lat)
+        self.loc = np.arange(0, self.lon.size) * 10
 
     def test_grid_creation(self):
         """
-        Test 2d grid creation and subgrids.
+        Test grid creation and subgrids.
         """
-        grid = Basic2dGrid(self.x, self.y)
-        print(grid)
+        grid = BasicGrid(self.lon.flatten(), self.lat.flatten(), self.loc)
+        subgrid = grid[np.arange(10)]
+        print(subgrid)
+        subsubgrid = subgrid[np.arange(5)]
+        print(subsubgrid)
+
+        for loc, lon, lat in subsubgrid:
+            print(loc, lon, lat)
+            lo, la = subsubgrid.loc2lonlat(loc)
+            print(lon == lo, lat == la)
+
+
+# class Test_Basic2dGrid(unittest.TestCase):
+
+#     def setUp(self):
+#         """
+#         Setup dummy grid.
+#         """
+#         self.x = np.arange(-180, 180, 30)
+#         self.y = np.arange(-90, 90, 30)
+
+#     def test_grid_creation(self):
+#         """
+#         Test 2d grid creation and subgrids.
+#         """
+#         grid = Basic2dGrid(self.x, self.y)
+#         print(grid)
 
 
 if __name__ == '__main__':
